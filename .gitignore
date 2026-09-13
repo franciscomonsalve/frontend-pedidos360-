@@ -1,0 +1,24 @@
+# Dependencias
+/node_modules
+
+# Build
+/dist
+/out-tsc
+/.angular/cache
+
+# Entornos locales sensibles
+src/environments/environment.local.ts
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
