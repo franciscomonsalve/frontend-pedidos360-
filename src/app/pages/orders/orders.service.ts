@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 export interface OrderItem {
   productId: number;
@@ -16,6 +16,12 @@ export interface Order {
   status: string;
   totalAmount: number;
   createdAt: string;
+  items: OrderItem[];
+}
+
+/** Payload de creacion: coincide con CreateOrderRequest del backend. */
+export interface NewOrder {
+  customerId: string;
   items: OrderItem[];
 }
 
@@ -40,5 +46,9 @@ export class OrdersService {
 
   changeStatus(id: number, status: string): Observable<Order> {
     return this.http.patch<Order>(`${this.baseUrl}/${id}/status`, { status });
+  }
+
+  create(order: NewOrder): Observable<Order> {
+    return this.http.post<Order>(this.baseUrl, order);
   }
 }
