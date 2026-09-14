@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MsalService } from '@azure/msal-angular';
+import { getApiRoles } from '../../auth/roles.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,12 +19,12 @@ export class DashboardComponent implements OnInit {
   userName = '';
   roles: string[] = [];
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const account = this.msalService.instance.getActiveAccount();
     if (account) {
       this.userName = account.name ?? account.username;
-      const claims = account.idTokenClaims as { roles?: string[] } | undefined;
-      this.roles = claims?.roles ?? [];
+      // Los roles se leen del access token de la API (no del ID token).
+      this.roles = await getApiRoles(this.msalService);
     }
   }
 }

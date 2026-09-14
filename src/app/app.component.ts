@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
@@ -18,7 +18,7 @@ import { filter, takeUntil } from 'rxjs/operators';
       </nav>
       <div class="user">
         <span>{{ userName }}</span>
-        <button (click)="logout()">Cerrar sesión</button>
+        <button (click)="logout()">Cerrar sesion</button>
       </div>
     </header>
     <main>
@@ -43,7 +43,16 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   userName = '';
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    // MSAL v3 exige inicializar la instancia antes de cualquier llamada.
+    await this.msalService.instance.initialize();
+
+    // Procesa la respuesta del redirect de Microsoft (si venimos de un login).
+    const result = await this.msalService.instance.handleRedirectPromise();
+    if (result?.account) {
+      this.msalService.instance.setActiveAccount(result.account);
+    }
+
     this.msalBroadcastService.inProgress$
       .pipe(
         filter((status) => status === InteractionStatus.None),
