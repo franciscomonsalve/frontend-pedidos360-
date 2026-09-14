@@ -19,6 +19,12 @@ export interface Order {
   items: OrderItem[];
 }
 
+/** Payload de creacion: coincide con CreateOrderRequest del backend. */
+export interface NewOrder {
+  customerId: string;
+  items: OrderItem[];
+}
+
 /**
  * Consume el BFF (ms-pedidos360-bff). No es necesario adjuntar el header
  * Authorization manualmente: el MsalInterceptor lo hace automaticamente
@@ -40,5 +46,9 @@ export class OrdersService {
 
   changeStatus(id: number, status: string): Observable<Order> {
     return this.http.patch<Order>(`${this.baseUrl}/${id}/status`, { status });
+  }
+
+  create(order: NewOrder): Observable<Order> {
+    return this.http.post<Order>(this.baseUrl, order);
   }
 }

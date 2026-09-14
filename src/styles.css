@@ -1,10 +1,229 @@
-html, body {
-  margin: 0;
-  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-  background: #fafafa;
-  color: #222;
+:root {
+  --bg: #F5F7FA;
+  --surface: #FFFFFF;
+  --sidebar: #0F2D4A;
+  --text: #1A2433;
+  --text-muted: #64748B;
+  --accent: #2563EB;
+  --border: #E2E8F0;
+
+  --status-creado: #64748B;
+  --status-aceptado: #0EA5E9;
+  --status-en-preparacion: #F59E0B;
+  --status-despachado: #8B5CF6;
+  --status-entregado: #16A34A;
+  --status-cancelado: #DC2626;
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+
+  --shadow-card: 0 1px 2px rgba(15, 45, 74, 0.06), 0 1px 3px rgba(15, 45, 74, 0.04);
+  --shadow-modal: 0 20px 45px rgba(15, 45, 74, 0.22);
 }
 
-button {
-  font-family: inherit;
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Encabezado de pagina */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+}
+
+.page-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+}
+
+/* Superficies */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #1D4FD8;
+  border-color: #1D4FD8;
+}
+
+.btn--secondary {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: var(--bg);
+}
+
+.btn--link {
+  padding: 0.25rem 0.4rem;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn--link:hover:not(:disabled) {
+  color: var(--status-cancelado);
+}
+
+/* Campos de formulario */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.input::placeholder {
+  color: #94A3B8;
+}
+
+/* Badges de estado */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-control);
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--status-creado);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge--creado {
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--status-creado);
+}
+
+.badge--aceptado {
+  background: rgba(14, 165, 233, 0.14);
+  color: #0369A1;
+}
+
+.badge--en_preparacion {
+  background: rgba(245, 158, 11, 0.16);
+  color: #B45309;
+}
+
+.badge--despachado {
+  background: rgba(139, 92, 246, 0.14);
+  color: #6D28D9;
+}
+
+.badge--entregado {
+  background: rgba(22, 163, 74, 0.14);
+  color: #15803D;
+}
+
+.badge--cancelado {
+  background: rgba(220, 38, 38, 0.12);
+  color: #B91C1C;
+}
+
+.badge--role {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--accent);
+}
+
+/* Mensajes */
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-control);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.07);
+  color: #B91C1C;
+}
+
+.muted {
+  color: var(--text-muted);
 }
