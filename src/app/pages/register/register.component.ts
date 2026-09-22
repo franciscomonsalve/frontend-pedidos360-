@@ -10,8 +10,10 @@ import { CreateUserResponse, RegisterService } from './register.service';
  * el boton "Crear cuenta" del login. Envia los datos al BFF, que crea al usuario
  * en Entra ID (Azure AD) via Microsoft Graph y le asigna su App Role.
  *
- * El usuario creado queda con forceChangePasswordNextSignIn = true, asi que en
- * su primer "Iniciar sesion con Microsoft" Azure le pedira cambiar la clave.
+ * forceChangePasswordNextSignIn queda en false (ver GraphUserService): en este
+ * tenant (External ID/CIAM) ese paso de "cambia tu clave" del primer login
+ * rompe el flujo de MSAL (AADSTS900561). La clave que el usuario define aqui
+ * queda como definitiva.
  */
 @Component({
   selector: 'app-register',
