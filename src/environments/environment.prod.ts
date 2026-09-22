@@ -5,8 +5,8 @@ export const environment = {
     clientId: 'faf7a202-e7db-49d8-89f1-0b32d5f1b4d2',
     tenantId: 'f280f365-653c-4282-b1ee-200e91b01736',
     authority: 'https://login.microsoftonline.com/f280f365-653c-4282-b1ee-200e91b01736',
-    redirectUri: 'https://174.129.54.64/auth/callback',
-    postLogoutRedirectUri: 'https://174.129.54.64/login',
+    redirectUri: 'https://54.163.21.47/auth/callback',
+    postLogoutRedirectUri: 'https://54.163.21.47/login',
   },
 
   // Dominio verificado del tenant; se muestra junto al alias en el formulario de registro.
