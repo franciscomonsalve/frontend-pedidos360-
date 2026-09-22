@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
 
 /**
@@ -13,7 +13,7 @@ import { MsalService } from '@azure/msal-angular';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="login-container">
       <div class="login-card">
@@ -22,6 +22,13 @@ import { MsalService } from '@azure/msal-angular';
         <button class="ms-button" (click)="login()">
           Iniciar sesión con Microsoft
         </button>
+
+        <div class="divider"><span>o</span></div>
+
+        <button class="create-button" type="button" routerLink="/register">
+          Crear cuenta
+        </button>
+        <p class="hint">Se crea directamente en Entra ID (Azure AD).</p>
       </div>
     </div>
   `,
@@ -33,6 +40,14 @@ import { MsalService } from '@azure/msal-angular';
     .ms-button { background: #2f2f2f; color: white; border: none; padding: 0.75rem 1.5rem;
       border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 1rem; }
     .ms-button:hover { background: #1f1f1f; }
+    .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0 0.75rem;
+      color: #999; font-size: 0.8rem; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #e0e0e0; }
+    .create-button { background: white; color: #2f2f2f; border: 1px solid #2f2f2f;
+      padding: 0.7rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 0.95rem;
+      width: 100%; }
+    .create-button:hover { background: #f4f4f4; }
+    .hint { color: #777; font-size: 0.78rem; margin: 0.5rem 0 0; }
   `],
 })
 export class LoginComponent implements OnInit {

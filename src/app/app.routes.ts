@@ -11,6 +11,12 @@ export const routes: Routes = [
   },
 
   {
+    // Alta de cuenta en Entra ID: publica, se llega desde el boton del login
+    path: 'register',
+    loadComponent: () => import('./pages/register/register.component').then((m) => m.RegisterComponent),
+  },
+
+  {
     // MSAL redirige aqui tras un login exitoso antes de continuar a la ruta original
     path: 'auth/callback',
     loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent),

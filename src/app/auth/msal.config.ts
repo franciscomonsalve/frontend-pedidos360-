@@ -70,6 +70,12 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
  */
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string> | null>();
+
+  // El alta de cuenta ocurre ANTES de tener sesion: si el interceptor intentara
+  // adjuntar un token aqui, dispararia un redirect de login y el POST nunca saldria.
+  // null = no pedir token para esta ruta (MSAL prioriza la coincidencia mas especifica).
+  protectedResourceMap.set(`${environment.apiBaseUrl}/users/register`, null);
+
   protectedResourceMap.set(`${environment.apiBaseUrl}/*`, [environment.apiScope]);
 
   return {

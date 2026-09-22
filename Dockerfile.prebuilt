@@ -1,0 +1,15 @@
+# Variante liviana para instancias con poca RAM (ej. t3.micro): no compila
+# Angular acá (eso se hace local con `npm run build -- --configuration production`),
+# solo empaqueta el dist/ ya generado con nginx. Evita que `npm ci`/`ng build`
+# tumben la instancia por falta de memoria.
+FROM nginx:alpine
+COPY dist/frontend-pedidos360/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN apk add --no-cache openssl && \
+    mkdir -p /etc/nginx/certs && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+      -keyout /etc/nginx/certs/selfsigned.key \
+      -out /etc/nginx/certs/selfsigned.crt \
+      -subj "/C=CL/ST=RM/L=Santiago/O=Pedidos360/CN=localhost"
+EXPOSE 80 443
+CMD ["nginx", "-g", "daemon off;"]

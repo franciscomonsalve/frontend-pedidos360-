@@ -9,6 +9,10 @@
     postLogoutRedirectUri: 'http://localhost:4200/login',
   },
 
+  // Dominio verificado del tenant; se muestra junto al alias en el formulario de registro.
+  // Debe coincidir con AZURE_USER_DOMAIN del BFF (pedidos360.graph.user-domain).
+  signupDomain: 'ActividadClauodNative123.onmicrosoft.com',
+
   apiScope: 'api://08c770a5-21a6-4434-8d59-28723c7c759d/access_as_user',
 
   apiBaseUrl: 'http://localhost:8080/api',
