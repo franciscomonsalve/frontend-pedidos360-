@@ -36,6 +36,15 @@ export const routes: Routes = [
   },
 
   {
+    // Solo Admin. Si un usuario sin ese rol pega la URL, roleGuard loguea
+    // un 401 en consola y redirige directo al dashboard (no a /unauthorized).
+    path: 'auditoria',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['Admin'], redirectTo: '/dashboard' },
+    loadComponent: () => import('./pages/auditoria/auditoria.component').then((m) => m.AuditoriaComponent),
+  },
+
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then((m) => m.UnauthorizedComponent),
   },

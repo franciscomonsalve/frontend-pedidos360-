@@ -5,6 +5,7 @@ import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
 import { InteractionStatus } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { getApiRoles } from './auth/roles.util';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ import { filter, takeUntil } from 'rxjs/operators';
         <nav class="sidebar__nav" aria-label="Navegación principal">
           <a routerLink="/dashboard" routerLinkActive="is-active">Panel</a>
           <a routerLink="/orders" routerLinkActive="is-active">Pedidos</a>
+          <a *ngIf="isAdmin" routerLink="/auditoria" routerLinkActive="is-active">Auditoría</a>
         </nav>
 
         <div class="sidebar__footer">
@@ -142,10 +144,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isLoggedIn = false;
   userName = '';
+  isAdmin = false;
 
   async ngOnInit(): Promise<void> {
-    // MSAL v3 exige inicializar la instancia antes de cualquier llamada.
-    await this.msalService.instance.initialize();
+    // La inicializacion de MSAL ya la garantiza el APP_INITIALIZER en
+    // app.config.ts (corre antes de que el Router y los guards evaluen la
+    // navegacion inicial), asi que aca solo falta procesar el redirect.
 
     // Procesa la respuesta del redirect de Microsoft (si venimos de un login).
     const result = await this.msalService.instance.handleRedirectPromise();
@@ -163,14 +167,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this.updateAccountState();
   }
 
-  private updateAccountState(): void {
+  private async updateAccountState(): Promise<void> {
     const accounts = this.msalService.instance.getAllAccounts();
     if (accounts.length > 0) {
       this.msalService.instance.setActiveAccount(accounts[0]);
       this.isLoggedIn = true;
       this.userName = accounts[0].name ?? accounts[0].username;
+      const roles = await getApiRoles(this.msalService);
+      this.isAdmin = roles.includes('Admin');
     } else {
       this.isLoggedIn = false;
+      this.isAdmin = false;
     }
   }
 

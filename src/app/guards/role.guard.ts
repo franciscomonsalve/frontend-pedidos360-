@@ -9,12 +9,17 @@ import { getApiRoles } from '../auth/roles.util';
  *
  * Los roles se leen del ACCESS TOKEN de la API (claim "roles"), porque los
  * App Roles están definidos/asignados en el App Registration del backend.
+ *
+ * `route.data['redirectTo']` permite elegir a dónde mandar al usuario sin
+ * el rol requerido (por defecto `/unauthorized`); algunas rutas prefieren
+ * volver directo al dashboard en vez de mostrar la pantalla de "sin acceso".
  */
 export const roleGuard: CanActivateFn = async (route) => {
   const msalService = inject(MsalService);
   const router = inject(Router);
 
   const requiredRoles: string[] = route.data?.['roles'] ?? [];
+  const redirectTo: string = route.data?.['redirectTo'] ?? '/unauthorized';
   const account = msalService.instance.getActiveAccount();
 
   if (!account) {
@@ -30,7 +35,12 @@ export const roleGuard: CanActivateFn = async (route) => {
 
   const hasRole = requiredRoles.some((role) => userRoles.includes(role));
   if (!hasRole) {
-    router.navigate(['/unauthorized']);
+    // El backend habria respondido 401/403 igual; lo dejamos explicito en
+    // consola para que quede claro por que se corto la navegacion.
+    console.error(
+      `401 Unauthorized: la cuenta activa no tiene ninguno de los roles requeridos [${requiredRoles.join(', ')}] para acceder a "${route.routeConfig?.path}".`
+    );
+    router.navigate([redirectTo]);
     return false;
   }
 
