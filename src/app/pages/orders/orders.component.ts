@@ -42,6 +42,9 @@ import { Order, OrderItem, OrdersService } from './orders.service';
     <p *ngIf="loading" class="muted">Cargando pedidos...</p>
     <p *ngIf="errorMessage" class="alert">{{ errorMessage }}</p>
 
+    <p class="status-msg status-msg--error" *ngIf="changeError">{{ changeError }}</p>
+    <p class="status-msg status-msg--ok" *ngIf="changeOk">{{ changeOk }}</p>
+
     <div class="card table-wrap" *ngIf="!loading && !errorMessage && orders.length">
       <table class="table">
         <thead>
@@ -52,6 +55,7 @@ import { Order, OrderItem, OrdersService } from './orders.service';
             <th scope="col" class="num">Ítems</th>
             <th scope="col" class="num">Total</th>
             <th scope="col">Fecha</th>
+            <th scope="col">Cambiar estado</th>
           </tr>
         </thead>
         <tbody>
@@ -62,6 +66,28 @@ import { Order, OrderItem, OrdersService } from './orders.service';
             <td class="num">{{ order.items.length }}</td>
             <td class="num">{{ order.totalAmount | currency:'CLP':'symbol-narrow':'1.0-0' }}</td>
             <td>{{ order.createdAt | date:'short' }}</td>
+            <td>
+              <!-- Solo se ofrecen las transiciones que el backend acepta desde el estado
+                   actual (OrderStatus.canTransitionTo). Los estados finales no ofrecen nada. -->
+              <div class="status-actions" *ngIf="nextStatuses(order.status).length; else sinAcciones">
+                <select class="select select--sm"
+                        [ngModel]="pendingStatus[order.id] || ''"
+                        (ngModelChange)="pendingStatus[order.id] = $event"
+                        [disabled]="changingId === order.id"
+                        [attr.aria-label]="'Nuevo estado del pedido ' + order.id">
+                  <option value="">Seleccionar…</option>
+                  <option *ngFor="let next of nextStatuses(order.status)" [value]="next">
+                    {{ statusLabel(next) }}
+                  </option>
+                </select>
+                <button type="button" class="btn btn--sm"
+                        [disabled]="!pendingStatus[order.id] || changingId === order.id"
+                        (click)="changeStatus(order)">
+                  {{ changingId === order.id ? 'Aplicando…' : 'Aplicar' }}
+                </button>
+              </div>
+              <ng-template #sinAcciones><span class="muted">—</span></ng-template>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -284,6 +310,17 @@ import { Order, OrderItem, OrdersService } from './orders.service';
     @media (max-width: 700px) {
       .item { grid-template-columns: 1fr 1fr; }
     }
+
+    .status-actions { display: flex; gap: 0.4rem; align-items: center; }
+    .select--sm, .btn--sm { padding: 0.3rem 0.5rem; font-size: 0.85rem; }
+    .btn--sm { cursor: pointer; border-radius: var(--radius-control); border: 1px solid #CBD5E1;
+      background: #FFFFFF; }
+    .btn--sm:disabled { opacity: 0.5; cursor: not-allowed; }
+    .muted { color: #94A3B8; }
+    .status-msg { margin: 0 0 0.75rem; padding: 0.6rem 0.8rem; border-radius: var(--radius-control);
+      font-size: 0.9rem; }
+    .status-msg--error { background: #FEF2F2; color: #991B1B; }
+    .status-msg--ok { background: #F0FDF4; color: #166534; }
   `],
 })
 export class OrdersComponent implements OnInit {
@@ -314,6 +351,23 @@ export class OrdersComponent implements OnInit {
   search = '';
   statusFilter = '';
 
+  // Transiciones validas por estado. Espejo de OrderStatus.canTransitionTo en el backend:
+  // el backend sigue siendo la autoridad (responde 409 si no corresponde); esto solo evita
+  // ofrecer en la UI opciones que se sabe que van a fallar.
+  private readonly nextByStatus: Record<string, string[]> = {
+    CREADO: ['ACEPTADO', 'CANCELADO'],
+    ACEPTADO: ['EN_PREPARACION', 'CANCELADO'],
+    EN_PREPARACION: ['DESPACHADO', 'CANCELADO'],
+    DESPACHADO: ['ENTREGADO'],
+    ENTREGADO: [],
+    CANCELADO: [],
+  };
+
+  pendingStatus: Record<number, string> = {};
+  changingId: number | null = null;
+  changeError = '';
+  changeOk = '';
+
   showCreate = false;
   saving = false;
   createError = '';
@@ -338,6 +392,41 @@ export class OrdersComponent implements OnInit {
           ? 'No tienes permisos para ver los pedidos.'
           : 'No fue posible cargar los pedidos.';
         this.loading = false;
+      },
+    });
+  }
+
+  nextStatuses(current: string): string[] {
+    return this.nextByStatus[current] ?? [];
+  }
+
+  changeStatus(order: Order): void {
+    const target = this.pendingStatus[order.id];
+    if (!target) {
+      return;
+    }
+
+    this.changingId = order.id;
+    this.changeError = '';
+    this.changeOk = '';
+
+    this.ordersService.changeStatus(order.id, target).subscribe({
+      next: (updated) => {
+        order.status = updated.status;
+        this.pendingStatus[order.id] = '';
+        this.changingId = null;
+        this.changeOk = `Pedido ${order.id}: ${this.statusLabel(target)}. `
+          + 'Los comandos asincronos salieron a RabbitMQ.';
+      },
+      error: (err) => {
+        this.changingId = null;
+        // 403: el rol no alcanza (cambiar estado exige Admin u Operator).
+        // 409: transicion invalida, o el catalogo rechazo la reserva de stock.
+        this.changeError = err.status === 403
+          ? 'No tienes permisos para cambiar el estado (requiere Admin u Operator).'
+          : err.status === 409
+            ? (err.error?.message ?? 'Transicion no permitida desde el estado actual.')
+            : 'No fue posible cambiar el estado del pedido.';
       },
     });
   }
