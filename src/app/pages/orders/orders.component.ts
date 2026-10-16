@@ -29,7 +29,7 @@ import { Order, OrderItem, OrdersService } from './orders.service';
       </div>
 
       <div class="field filters__status">
-        <label class="field__label" for="statusFilter">Estado</label>
+        <label class="field__label" for="statusFilter">Filtrar por estado</label>
         <select id="statusFilter" class="select" [(ngModel)]="statusFilter">
           <option value="">Todos</option>
           <option *ngFor="let status of statuses" [value]="status">
