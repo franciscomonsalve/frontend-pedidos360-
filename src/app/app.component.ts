@@ -146,17 +146,12 @@ export class AppComponent implements OnInit, OnDestroy {
   userName = '';
   isAdmin = false;
 
-  async ngOnInit(): Promise<void> {
-    // La inicializacion de MSAL ya la garantiza el APP_INITIALIZER en
-    // app.config.ts (corre antes de que el Router y los guards evaluen la
-    // navegacion inicial), asi que aca solo falta procesar el redirect.
-
-    // Procesa la respuesta del redirect de Microsoft (si venimos de un login).
-    const result = await this.msalService.instance.handleRedirectPromise();
-    if (result?.account) {
-      this.msalService.instance.setActiveAccount(result.account);
-    }
-
+  ngOnInit(): void {
+    // El APP_INITIALIZER de app.config.ts ya inicializo MSAL y proceso el
+    // redirect de Microsoft antes de que arrancara el Router, asi que aqui no
+    // se vuelve a llamar handleRedirectPromise(): dos manejos simultaneos del
+    // mismo redirect provocaban un rebote de login (ver el comentario extenso
+    // en app.config.ts). Aqui solo se refleja el estado de la cuenta en la UI.
     this.msalBroadcastService.inProgress$
       .pipe(
         filter((status) => status === InteractionStatus.None),

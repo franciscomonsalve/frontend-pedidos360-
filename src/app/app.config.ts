@@ -33,7 +33,30 @@ import {
  * corre hasta que MSAL este listo.
  */
 export function initializeMsal(msalInstance: IPublicClientApplication): () => Promise<void> {
-  return () => msalInstance.initialize();
+  return async () => {
+    await msalInstance.initialize();
+
+    // El redirect se procesa AQUI, no en AppComponent.
+    //
+    // POR QUE: AppComponent y el Router arrancan en paralelo. Si
+    // handleRedirectPromise() vive en ngOnInit, el MsalGuard de la ruta
+    // destino puede evaluar ANTES de que el hash de Microsoft este
+    // procesado; entonces no ve ninguna cuenta y dispara un loginRedirect
+    // nuevo. El resultado es un rebote a /auth/callback que a veces se
+    // resuelve solo al segundo o tercer intento, segun quien gane la
+    // carrera. Ademas MSAL no admite dos manejos de redirect simultaneos:
+    // el segundo falla con interaction_in_progress.
+    //
+    // Dentro del APP_INITIALIZER, Angular no arranca el Router hasta que
+    // esta promesa se resuelve, asi que cuando el primer guard corre la
+    // cuenta ya existe y esta activa.
+    const resultado = await msalInstance.handleRedirectPromise();
+
+    const cuenta = resultado?.account ?? msalInstance.getAllAccounts()[0];
+    if (cuenta) {
+      msalInstance.setActiveAccount(cuenta);
+    }
+  };
 }
 
 export const appConfig: ApplicationConfig = {
